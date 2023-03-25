@@ -10,13 +10,17 @@ import {
   ColorMode
 } from "@airgap/beacon-sdk";
 
-import { fetchContractData, _walletConfig } from '../actions';
+import { fetchData, fetchContractData, _walletConfig } from "../actions";
+import { Route, Routes } from "react-router";
+import Home from "./layouts/Home";
+import Create from "./layouts/Create";
+import Show from "./layouts/Show";
 
 const App = () => {
     const selector = useSelector(state => state);
     const dispatch = useDispatch();
     const [Tezos, setTezos] = useState(
-        new TezosToolkit("https://ghostnet.ecadinfra.com/")
+      new TezosToolkit("https://ghostnet.smartpy.io/")
     );
     const [wallet, setWallet] = useState(null);
 
@@ -44,7 +48,7 @@ const App = () => {
                 const balance = await Tezos.tz.getBalance(userAddress);
                 dispatch(_walletConfig(
                     {
-                        userAddress: userAddress, 
+                        userAddress: userAddress,
                         balance: balance.toNumber()
                     }));
             }
@@ -54,18 +58,20 @@ const App = () => {
 
 
     useEffect(()=>{
-        dispatch(fetchContractData({Tezos}));
+        dispatch(fetchData({Tezos}));
     },[Tezos, dispatch]);
 
     return (
+      <div className="ui container">
+        <Header Tezos={Tezos} setTezos={setTezos} wallet={wallet} />
         <div className="ui container">
-            <Header Tezos={Tezos} setTezos={setTezos} wallet={wallet} />
-            <div className="ui container center aligned">
-                <p className="ui">User Address: {selector.walletConfig.user.userAddress}</p>
-                <p className="ui">User Balance: {selector.walletConfig.user.balance}</p>
-                <p className="ui">Storage: {selector.contractStorage} </p>
-            </div>
+          <Routes>
+            <Route path="/create" element={<Create Tezos={Tezos} />} />
+            <Route path="/show/:id" element={<Show Tezos={Tezos} />} />
+            <Route path="/" element={<Home Tezos={Tezos} />} />
+          </Routes>
         </div>
+      </div>
     );
 }
 
